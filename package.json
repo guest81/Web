@@ -1,9 +1,17 @@
 {
-  "name": "multi-webhook-api",
-  "version": "1.0.0",
+  "name": "phantomx-webhook-relay",
+  "version": "2.0.0",
+  "description": "Relay API for PhantomX Loader",
   "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "express": "^4.18.2",
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": "16.x"
   }
 }
