@@ -4,53 +4,47 @@ const fetch = require("node-fetch");
 const app = express();
 app.use(express.json());
 
-// مفتاح سري بين روبلوكس و API
-const SECRET_KEY = process.env.SECRET_KEY;
+// متغيرات Railway
+const SECRET = process.env.SECRET_KEY;
 
-// ويبهوكات من Railway Variables
-const SuccessWebhook = process.env.SuccessWebhook;
-const DiscordWebhook = process.env.DiscordWebhook;
-const LocationWebhook = process.env.LocationWebhook;
+const hooks = {
+    success: process.env.SuccessWebhook,
+    location: process.env.LocationWebhook,
+    discord: process.env.DiscordWebhook
+};
 
-// API استقبال اللوقز
-app.post("/log", async (req, res) => {
-
-    const key = req.headers["x-api-key"];
-    if (key !== SECRET_KEY) {
-        return res.status(403).send("Invalid key");
+app.post("/log", async (req,res)=>{
+    
+    if(req.headers["x-key"] !== SECRET){
+        return res.sendStatus(403);
     }
 
-    const { type, msg } = req.body;
+    const { type, data } = req.body;
+    const url = hooks[type];
 
-    let webhook = null;
-
-    if (type === "success") webhook = SuccessWebhook;
-    if (type === "discord") webhook = DiscordWebhook;
-    if (type === "location") webhook = LocationWebhook;
-
-    if (!webhook) {
-        return res.status(400).send("Invalid type");
+    if(!url){
+        return res.status(400).json({error:"invalid type"});
     }
 
-    try {
-        await fetch(webhook, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+    try{
+        await fetch(url,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
             body: JSON.stringify({
-                content: msg
+                content: JSON.stringify(data)
             })
         });
 
-        res.send("Sent");
-    } catch (err) {
-        res.status(500).send("Webhook error");
+        res.json({status:"ok"});
+    }catch(e){
+        res.sendStatus(500);
     }
 });
 
-// للتأكد أن السيرفر شغال
-app.get("/", (req,res)=>{
-    res.send("API Running");
+app.get("/",(req,res)=>{
+    res.send("API running");
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("API running on port", PORT));
+app.listen(process.env.PORT || 3000);
