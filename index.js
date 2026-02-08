@@ -1,50 +1,36 @@
 const express = require("express");
 const fetch = require("node-fetch");
-
 const app = express();
+
 app.use(express.json());
 
-// متغيرات Railway
-const SECRET = process.env.SECRET_KEY;
-
-const hooks = {
+const WEBHOOKS = {
     success: process.env.SuccessWebhook,
     location: process.env.LocationWebhook,
     discord: process.env.DiscordWebhook
 };
 
-app.post("/log", async (req,res)=>{
-    
-    if(req.headers["x-key"] !== SECRET){
-        return res.sendStatus(403);
-    }
+const SECRET_KEY = process.env.SECRET_KEY;
 
-    const { type, data } = req.body;
-    const url = hooks[type];
+app.post("/log", async (req, res) => {
+    try {
+        const key = req.headers["x-key"];
+        if (key !== SECRET_KEY) return res.status(401).send({error:"Invalid key"});
 
-    if(!url){
-        return res.status(400).json({error:"invalid type"});
-    }
+        const { type, embed } = req.body;
+        if (!type || !embed || !WEBHOOKS[type]) return res.status(400).send({error:"Invalid body or type"});
 
-    try{
-        await fetch(url,{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({
-                content: JSON.stringify(data)
-            })
+        await fetch(WEBHOOKS[type], {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ embeds: [embed] })
         });
 
-        res.json({status:"ok"});
-    }catch(e){
-        res.sendStatus(500);
+        res.send({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({ error: "Server error" });
     }
 });
 
-app.get("/",(req,res)=>{
-    res.send("API running");
-});
-
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 3000, () => console.log("API running"));
