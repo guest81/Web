@@ -1,10 +1,7 @@
 {
-  "name": "webhook-api",
+  "name": "multi-webhook-api",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
   "dependencies": {
     "express": "^4.18.2",
     "node-fetch": "^2.6.7"
