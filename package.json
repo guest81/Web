@@ -1,7 +1,7 @@
 {
-  "name": "phantomx-webhook-relay",
-  "version": "2.0.0",
-  "description": "Relay API for PhantomX Loader",
+  "name": "phantomx-relay",
+  "version": "1.0.0",
+  "description": "Relay API for PhantomX Loader webhooks",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
